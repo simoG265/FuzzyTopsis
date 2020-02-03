@@ -1,26 +1,27 @@
 clear;
 lingclass = LinguisticClass();
-alternatives = {"a1", "a2"};
-criteria = ["c1", "c2"; "B", "B"];
-weights = [TriangularFuzzyNumber(0.3,0.5,0.5), TriangularFuzzyNumber(0.4,0.6,0.6)]; %manca metodo per il "merge" di pesi diversi o per fuzzyfication di pesi reali
+alternatives = {"A1", "A2", "A3"};
+criteria = ["c1", "c2", "c3"; ...
+            "B",  "B",  "C"]; %last criteria is a cost
+% The following lines are in case you want to use crisp weights
+    crispweights =  [3,6,4]/10; %crisp weights scaled (must be <1)
+    sizecw = size(crispweights,2);
+    fuzzyweights(1,sizecw) = TriangularFuzzyNumber(); 
+    % Creating crisp weights as a particular case of fuzzy 
+    for i=1:size(crispweights,2)
+        fuzzyweights(1,i) = TriangularFuzzyNumber(crispweights(1,i),crispweights(1,i),crispweights(1,i));
+    end
 
-DM1 = ["M", "H"; "H", "M"];
-DM2 = ["H", "H"; "L", "L"];
-disp(strcmp(DM1(1,2), lingclass.levels{2}));
-%Create new DecisionProblemManager
+DM1 = ["M",		"M",		"H";
+"VH",		"L",		"H";	
+"M",		"M",		"H"];
+DM2 = ["H",		"L",		"H";
+"VH",		"L",		"L";	
+"H",		"H",		"H"];
+
 probManager = DecisionProblemManager(alternatives, criteria, lingclass,DM1, DM2);
-
-%Add Decision Matrices
-%probManager = addDM(probManager, DM1);
-
-% disp(probManager.DM{1});
-% disp(strcmp(probManager.DM{1}(1,2), lingclass.levels{2}));
-
-
-
-solution = solveMCDM(probManager, weights);
+solution = solveMCDM(probManager, fuzzyweights);
 disp("Closeness coefficients:");
 fprintf('Alternative 1: %3.3f \n', solution(1)); 
-fprintf('Alternative 2: %3.3f \n', solution(2)); 
-
-disp(size(probManager.DM, 2));
+fprintf('Alternative 2: %3.3f \n', solution(2));
+fprintf('Alternative 3: %3.3f \n', solution(3));
